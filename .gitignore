@@ -41,3 +41,10 @@ nb-configuration.xml
 
 # Plugin directory
 /.quarkus/cli/plugins/
+
+# Node / Cypress
+node_modules/
+**/node_modules/
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/

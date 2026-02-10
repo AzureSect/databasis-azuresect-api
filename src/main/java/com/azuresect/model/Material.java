@@ -12,4 +12,6 @@ public class Material {
     public String name;
 
     public String description;
+
+    public Integer stockQuantity;
 }

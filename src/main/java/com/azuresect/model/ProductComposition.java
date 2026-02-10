@@ -1,5 +1,7 @@
 package com.azuresect.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -9,6 +11,7 @@ public class ProductComposition {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
+    @JsonBackReference
     public Product product;
 
     @ManyToOne
