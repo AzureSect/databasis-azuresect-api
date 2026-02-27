@@ -34,4 +34,11 @@ public class MaterialResource {
         return materialService.update(id, material);
 }
 
+@DELETE
+@Path("/{id}")
+public Response delete(@PathParam("id") Long id) {
+    materialService.delete(id);
+    return Response.noContent().build();
+}
+
 }

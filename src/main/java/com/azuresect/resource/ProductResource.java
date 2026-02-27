@@ -15,6 +15,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.DELETE;
 
 @Path("/products")
 @Produces(MediaType.APPLICATION_JSON)
@@ -29,7 +30,7 @@ public class ProductResource {
         return productService.listAll();
     }
 
-   @POST
+    @POST
     public Response create(Product product) {
         Product created = productService.create(product);
         return Response.status(Response.Status.CREATED).entity(created).build();
@@ -39,6 +40,13 @@ public class ProductResource {
     @Path("/{id}")
     public Product update(@PathParam("id") Long id, Product product) {
         return productService.update(id, product);
+    }
+
+    @DELETE
+    @Path("/{id}")
+    public Response delete(@PathParam("id") Long id) {
+        productService.delete(id);
+        return Response.noContent().build();
     }
 }
 
