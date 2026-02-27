@@ -7,6 +7,8 @@ import com.azuresect.repository.ProductRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class ProductService {
@@ -14,20 +16,29 @@ public class ProductService {
     @Inject
     ProductRepository repository;
 
+    public Product findByName(String name) {
+        return repository.find("name", name).firstResult();
+    }
+
     @Transactional
     public Product create(Product product) {
-        if (product.name == null || product.name.isEmpty())
-            throw new RuntimeException("Nome do produto é obrigatório");
+        if (product.getName() == null || product.getName().isEmpty())
+            throw new WebApplicationException("Nome do produto é obrigatório", Response.Status.BAD_REQUEST);
 
-        if (product.value <= 0)
-            throw new RuntimeException("Valor do produto deve ser maior que zero");
+        if (product.getValue() <= 0)
+            throw new WebApplicationException("Valor do produto deve ser maior que zero", Response.Status.BAD_REQUEST);
 
-        if (product.composition != null) {
-            for (ProductComposition comp : product.composition) {
-                if (comp.material == null) throw new RuntimeException("Material não informado");
-                if (comp.quantityNeeded == null || comp.quantityNeeded <= 0)
-                    throw new RuntimeException("Quantidade necessária inválida");
-                comp.product = product;
+        Product existing = findByName(product.getName());
+        if (existing != null) {
+            throw new WebApplicationException("Já existe um produto com este nome.", Response.Status.CONFLICT);
+        }
+
+        if (product.getComposition() != null) {
+            for (ProductComposition comp : product.getComposition()) {
+                if (comp.getMaterial() == null) throw new WebApplicationException("Material não informado", Response.Status.BAD_REQUEST);
+                if (comp.getQuantityNeeded() == null || comp.getQuantityNeeded() <= 0)
+                    throw new WebApplicationException("Quantidade necessária inválida", Response.Status.BAD_REQUEST);
+                comp.setProduct(product);
             }
         }
 
@@ -42,20 +53,25 @@ public class ProductService {
     @Transactional
     public Product update(Long id, Product data) {
         Product product = repository.findById(id);
-        if (product == null) throw new RuntimeException("Produto não encontrado");
+        if (product == null) throw new WebApplicationException("Produto não encontrado", Response.Status.NOT_FOUND);
 
-        product.name = data.name;
-        product.value = data.value;
-        product.description = data.description;
+        Product existing = repository.find("name = ?1 and id != ?2", data.getName(), id).firstResult();
+        if (existing != null) {
+            throw new WebApplicationException("Já existe outro produto com este nome.", Response.Status.CONFLICT);
+        }
 
-        if (data.composition != null) {
-            product.composition.clear();
-            for (ProductComposition comp : data.composition) {
-                if (comp.material == null) throw new RuntimeException("Material não informado");
-                if (comp.quantityNeeded == null || comp.quantityNeeded <= 0)
-                    throw new RuntimeException("Quantidade necessária inválida");
-                comp.product = product;
-                product.composition.add(comp);
+        product.setName(data.getName());
+        product.setValue(data.getValue());
+        product.setDescription(data.getDescription());
+
+        if (data.getComposition() != null) {
+            product.getComposition().clear();
+            for (ProductComposition comp : data.getComposition()) {
+                if (comp.getMaterial() == null) throw new WebApplicationException("Material não informado", Response.Status.BAD_REQUEST);
+                if (comp.getQuantityNeeded() == null || comp.getQuantityNeeded() <= 0)
+                    throw new WebApplicationException("Quantidade necessária inválida", Response.Status.BAD_REQUEST);
+                comp.setProduct(product);
+                product.getComposition().add(comp);
             }
         }
 

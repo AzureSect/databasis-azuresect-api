@@ -28,42 +28,42 @@ public class ProductionService {
 
         Map<Long, Integer> stock = new HashMap<>();
         for (Material m : materialRepository.listAll()) {
-            stock.put(m.id, m.stockQuantity);
+            stock.put(m.getId(), m.getStockQuantity());
         }
 
         double totalProductionValue = 0;
         List<Map<String, Object>> itensSugeridos = new ArrayList<>();
 
         for (Product p : products) {
-            if (p.composition == null || p.composition.isEmpty()) continue;
+            if (p.getComposition() == null || p.getComposition().isEmpty()) continue;
 
             int maxUnits = Integer.MAX_VALUE;
 
-            for (ProductComposition comp : p.composition) {
-                Integer available = stock.getOrDefault(comp.material.id, 0);
-                int possible = available / comp.quantityNeeded;
+            for (ProductComposition comp : p.getComposition()) {
+                Integer available = stock.getOrDefault(comp.getMaterial().getId(), 0);
+                int possible = available / comp.getQuantityNeeded();
                 maxUnits = Math.min(maxUnits, possible);
             }
 
             if (maxUnits > 0) {
-                double productTotalValue = maxUnits * p.value;
+                double productTotalValue = maxUnits * p.getValue();
                 totalProductionValue += productTotalValue;
 
                 Map<String, Object> item = new HashMap<>();
-                item.put("produto", p.name);
+                item.put("produto", p.getName());
                 item.put("quantidade", maxUnits);
                 item.put("valorTotal", productTotalValue);
                 
                 List<Map<String, Object>> materiaisDesteProduto = new ArrayList<>();
-                for (ProductComposition comp : p.composition) {
+                for (ProductComposition comp : p.getComposition()) {
                     Map<String, Object> m = new HashMap<>();
-                    m.put("nome", comp.material.name);
-                    m.put("gastoUnitario", comp.quantityNeeded);
-                    m.put("gastoTotal", comp.quantityNeeded * maxUnits);
+                    m.put("nome", comp.getMaterial().getName());
+                    m.put("gastoUnitario", comp.getQuantityNeeded());
+                    m.put("gastoTotal", comp.getQuantityNeeded() * maxUnits);
                     materiaisDesteProduto.add(m);
 
-                    int currentStock = stock.get(comp.material.id);
-                    stock.put(comp.material.id, currentStock - (comp.quantityNeeded * maxUnits));
+                    int currentStock = stock.get(comp.getMaterial().getId());
+                    stock.put(comp.getMaterial().getId(), currentStock - (comp.getQuantityNeeded() * maxUnits));
                 }
                 item.put("materiaisUtilizados", materiaisDesteProduto);
                 itensSugeridos.add(item);

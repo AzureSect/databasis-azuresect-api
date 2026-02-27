@@ -9,15 +9,56 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    private Long id;
 
-    public String name;
+    private String name;
 
-    public String description;
+    private String description;
 
-    public double value;
-
+    private double value;
+    
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true) 
     @JsonManagedReference
-    public List<ProductComposition> composition;
+    private List<ProductComposition> composition;
+
+    // Getters e Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public void setValue(double value) {
+        this.value = value;
+    }
+
+    public List<ProductComposition> getComposition() {
+        return composition;
+    }
+
+    public void setComposition(List<ProductComposition> composition) {
+        this.composition = composition;
+    }
 }
