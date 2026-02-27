@@ -1,56 +1,152 @@
-# databasis-azure-api
+# Databasis — API de Gestão de Inventário (Back-end)
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+API REST do ecossistema Databasis, responsável por toda a lógica de negócio e persistência de dados do sistema de gestão de estoque e composição de produtos.
 
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+---
 
-## Running the application in dev mode
+## Sobre o Projeto
 
-You can run your application in dev mode that enables live coding using:
-```shell script
+Este repositório contém o módulo back-end da aplicação, desenvolvido com **Quarkus** e hospedado no **Render** (plano gratuito).
+
+> ⚠️ **Atenção:** No primeiro acesso pode haver um tempo de espera de até ~1 minuto, pois o servidor entra em modo sleep. Isso é esperado.
+
+A API fornece endpoints para:
+
+- Controle de matérias-primas e seus estoques
+- Cadastro e composição técnica de produtos
+- Cálculo de capacidade produtiva com base no estoque disponível
+- Priorização de produção por maior valor comercial
+
+---
+
+## Arquitetura Full-Stack
+
+Para funcionamento completo do sistema, os dois módulos devem estar ativos:
+
+| Módulo | Repositório |
+|--------|-------------|
+| Front-end (React) | [databasis-azuresect-web](https://github.com/AzureSect/databasis-azuresect-web) |
+| Back-end (API Quarkus) | Este repositório |
+
+---
+
+## Tecnologias Utilizadas
+
+- **Java** com **Quarkus**
+- **PostgreSQL** (hospedado no Render)
+- **Hibernate ORM com Panache**
+- **RESTEasy** (JAX-RS)
+- **Cypress** — testes end-to-end (pasta `e2e/`)
+
+---
+
+## Funcionalidades
+
+### Gestão de Matérias-Primas
+- CRUD completo
+- Controle de quantidade em estoque
+
+### Gestão de Produtos
+- CRUD completo
+- Associação de múltiplas matérias-primas com quantidades necessárias
+
+### Sugestão de Produção
+- Cálculo automático da produção máxima possível com base no estoque
+- Priorização por maior valor comercial do produto
+- Retorno das quantidades produzíveis e valor total gerado
+
+---
+
+## Estrutura do Projeto
+
+```
+src/
+├── main/
+│   ├── java/
+│   │   └── ...         # Resources, Services, Entities, Repositories
+│   └── resources/
+│       └── application.properties
+e2e/                    # Testes end-to-end com Cypress
+```
+
+---
+
+## Configuração de Ambiente
+
+As variáveis de ambiente (URL do banco, credenciais) estão configuradas diretamente na plataforma **Render**, não sendo necessário configurá-las localmente para o ambiente de produção.
+
+Para rodar localmente, configure o `application.properties` com suas credenciais do PostgreSQL:
+
+```properties
+quarkus.datasource.db-kind=postgresql
+quarkus.datasource.username=SEU_USUARIO
+quarkus.datasource.password=SUA_SENHA
+quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/databasis
+quarkus.hibernate-orm.database.generation=update
+```
+
+---
+
+## Como Executar o Projeto
+
+### Pré-requisitos
+
+- Java 17+
+- Maven
+
+### Executar em modo desenvolvimento
+
+```bash
 ./mvnw compile quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at http://localhost:8080/q/dev/.
+API disponível em: `http://localhost:8080`
 
-## Packaging and running the application
+Dev UI disponível em: `http://localhost:8080/q/dev/`
 
-The application can be packaged using:
-```shell script
+### Gerar build de produção
+
+```bash
 ./mvnw package
-```
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
-
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-```shell script
-./mvnw package -Dquarkus.package.type=uber-jar
+java -jar target/quarkus-app/quarkus-run.jar
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+### Gerar executable nativo (opcional)
 
-## Creating a native executable
-
-You can create a native executable using: 
-```shell script
+```bash
 ./mvnw package -Dnative
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using: 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+---
+
+## Testes
+
+Os testes end-to-end estão na pasta `e2e/` e utilizam **Cypress**.
+
+### Pré-requisitos
+
+```bash
+npm install
 ```
 
-You can then execute your native executable with: `./target/databasis-azure-api-1.0.0-SNAPSHOT-runner`
+### Rodar os testes
 
-If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.
+```bash
+npx cypress open
+```
 
-## Provided Code
+---
 
-### REST
+## Endpoints Principais
 
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/api/materials` | Lista todas as matérias-primas |
+| POST | `/api/materials` | Cadastra uma matéria-prima |
+| PUT | `/api/materials/{id}` | Atualiza uma matéria-prima |
+| DELETE | `/api/materials/{id}` | Remove uma matéria-prima |
+| GET | `/api/products` | Lista todos os produtos |
+| POST | `/api/products` | Cadastra um produto |
+| PUT | `/api/products/{id}` | Atualiza um produto |
+| DELETE | `/api/products/{id}` | Remove um produto |
+| GET | `/api/production/suggest` | Retorna sugestão de produção com base no estoque |
