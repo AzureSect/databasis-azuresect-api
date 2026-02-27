@@ -24,11 +24,16 @@ public class MaterialService {
     }
 
     public Material findByName(String name) {
-        return repository.find("name", name).firstResult();
+        if (name == null) return null;
+        return repository.find("lower(name) = ?1", name.toLowerCase()).firstResult();
     }
 
     @Transactional
     public Material create(Material material) {
+        if (material.getName() == null || material.getName().isBlank()) {
+            throw new WebApplicationException("Nome do material é obrigatório", Response.Status.BAD_REQUEST);
+        }
+
         Material existing = findByName(material.getName());
         
         if (existing != null) {
@@ -47,12 +52,14 @@ public class MaterialService {
             throw new WebApplicationException("Material não encontrado", Response.Status.NOT_FOUND);
         }
 
-        Material existing = repository.find("name = ?1 and id != ?2", data.getName(), id).firstResult();
+        Material existing = repository.find("lower(name) = ?1 and id != ?2", 
+            data.getName().toLowerCase(), id).firstResult();
+            
         if (existing != null) {
             throw new WebApplicationException("Já existe outro material com este nome.", Response.Status.CONFLICT);
         }
 
-        entity.setName(data.getName());
+        entity.setName(data.getName()); 
         entity.setDescription(data.getDescription());
         entity.setStockQuantity(data.getStockQuantity());
         

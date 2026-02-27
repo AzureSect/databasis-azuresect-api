@@ -17,12 +17,13 @@ public class ProductService {
     ProductRepository repository;
 
     public Product findByName(String name) {
-        return repository.find("name", name).firstResult();
+        if (name == null) return null;
+        return repository.find("lower(name) = ?1", name.toLowerCase()).firstResult();
     }
 
     @Transactional
     public Product create(Product product) {
-        if (product.getName() == null || product.getName().isEmpty())
+        if (product.getName() == null || product.getName().isBlank())
             throw new WebApplicationException("Nome do produto é obrigatório", Response.Status.BAD_REQUEST);
 
         if (product.getValue() <= 0)
@@ -55,12 +56,13 @@ public class ProductService {
         Product product = repository.findById(id);
         if (product == null) throw new WebApplicationException("Produto não encontrado", Response.Status.NOT_FOUND);
 
-        Product existing = repository.find("name = ?1 and id != ?2", data.getName(), id).firstResult();
+        Product existing = repository.find("lower(name) = ?1 and id != ?2", 
+            data.getName().toLowerCase(), id).firstResult();
         if (existing != null) {
             throw new WebApplicationException("Já existe outro produto com este nome.", Response.Status.CONFLICT);
         }
 
-        product.setName(data.getName());
+        product.setName(data.getName()); 
         product.setValue(data.getValue());
         product.setDescription(data.getDescription());
 
